@@ -1,4 +1,5 @@
 import React from 'react';
+import livyLogo from '../assets/livy_logo.svg';
 
 interface BadgeProps {
   size?: 'small' | 'large';
@@ -30,14 +31,24 @@ const Badge: React.FC<BadgeProps> = ({
     return size === 'large' ? 'w-24 h-24' : 'w-12 h-12';
   };
 
+  const getIconSizeClass = () => {
+    return size === 'large' ? 'w-12 h-12' : 'w-6 h-6';
+  };
+
   return (
     <div 
       className={`rounded-full ${getGradientClass()} ${getSizeClass()} flex items-center justify-center ${className}`}
     >
-      {icon && (
+      {icon ? (
         <div className="text-white">
           {icon}
         </div>
+      ) : (
+        <img 
+          src={livyLogo} 
+          alt="Livy Logo" 
+          className={`${getIconSizeClass()} text-white`}
+        />
       )}
     </div>
   );

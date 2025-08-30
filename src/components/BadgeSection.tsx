@@ -1,6 +1,5 @@
 import React from 'react';
 import Badge from './Badge';
-import LeafIcon from './LeafIcon';
 
 interface BadgeSectionProps {
   title: string;
@@ -28,7 +27,6 @@ const BadgeSection: React.FC<BadgeSectionProps> = ({
             key={index}
             gradient={badge.gradient}
             size={badge.size || 'small'}
-            icon={<LeafIcon />}
           />
         ))}
       </div>
