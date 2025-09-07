@@ -143,6 +143,10 @@ export const useApi = () => {
     return fetchApi<DashboardData>("/api/dashboard");
   }, [fetchApi]);
 
+  const getLivyData = useCallback(async (livyId: string): Promise<any> => {
+    return fetchApi<any>(`/api/livy/${livyId}`);
+  }, [fetchApi]);
+
   return {
     loading,
     error,
@@ -153,5 +157,6 @@ export const useApi = () => {
     getUserProfile,
     searchCampaigns,
     getDashboardData,
+    getLivyData,
   };
 };

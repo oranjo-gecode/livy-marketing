@@ -276,4 +276,75 @@ export const handlers = [
       data: dashboardData,
     });
   }),
+
+  // Get individual Livy data
+  http.get("/api/livy/:id", ({ params }) => {
+    const livyId = params.id as string;
+    
+    // Mock data for individual Livy - in a real app, this would be dynamic based on the ID
+    const livyData = {
+      id: livyId,
+      name: 'Sip & Paint vol.2',
+      kpis: {
+        totalClaimedStamps: 7500,
+        lastWeekStamps: 1250,
+        mostPopularStamp: {
+          name: 'Bri-bri reclamados',
+          count: 725,
+          gradient: 'purple-pink'
+        }
+      },
+      mapLocations: [
+        {
+          id: '1',
+          name: 'Bacano Escalante',
+          nftsGenerated: 3650,
+          lastWeekNfts: 520,
+          coordinates: { x: 30, y: 40 }
+        },
+        {
+          id: '2',
+          name: 'Restaurante 12/0',
+          nftsGenerated: 3850,
+          lastWeekNfts: 730,
+          coordinates: { x: 50, y: 60 }
+        },
+        {
+          id: '3',
+          name: 'Restaurante Isolina',
+          nftsGenerated: 0,
+          lastWeekNfts: 0,
+          coordinates: { x: 70, y: 30 }
+        }
+      ],
+      collaborators: [
+        { id: '1', name: 'Restaurante 12/0', status: 'activo' as const },
+        { id: '2', name: 'Bacano Escalante', status: 'activo' as const },
+        { id: '3', name: 'Isolina', status: 'en proceso' as const }
+      ],
+      locationRanking: [
+        { id: '1', name: 'Restaurante 12/0', nftsGenerated: 3850 },
+        { id: '2', name: 'Bacano Escalante', nftsGenerated: 3650 },
+        { id: '3', name: 'Isolina', nftsGenerated: 0 }
+      ],
+      buyerRanking: [
+        { id: '1', position: 1, address: '123', nftsClaimed: 98 },
+        { id: '2', position: 2, address: '123', nftsClaimed: 56, trend: 'up' as const },
+        { id: '3', position: 3, address: '123', nftsClaimed: 45 },
+        { id: '4', position: 4, address: '123', nftsClaimed: 42, trend: 'down' as const },
+        { id: '5', position: 5, address: '123', nftsClaimed: 35 }
+      ],
+      allLivys: [
+        { id: '1', name: 'Sip & Paint vol.2' },
+        { id: '2', name: 'Sip & Paint vol.1' },
+        { id: '3', name: 'Summer Pass' },
+        { id: '4', name: 'Hola Navidad!' }
+      ]
+    };
+
+    return HttpResponse.json({
+      success: true,
+      data: livyData,
+    });
+  }),
 ];
