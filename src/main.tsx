@@ -2,7 +2,6 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router";
 import "./index.css";
-import App from "./App.tsx";
 import { startMocks } from "./mocks";
 import Mobile from "./mobile/Mobile.tsx";
 import CampaignDetails from "./mobile/CampaignDetails";
@@ -11,6 +10,7 @@ import BuilderLayout from "./builder/BuilderLayout.tsx";
 import LivyConfiguration from "./builder/containers/LivyConfiguration.tsx";
 import CollaborationMap from "./builder/containers/CollaborationMap.tsx";
 import Stamp from "./builder/containers/Stamp.tsx";
+import Dashboard from "./dashboard/Dashboard.tsx";
 
 // Start MSW and then render the app
 async function bootstrap() {
@@ -31,7 +31,7 @@ async function bootstrap() {
       <StrictMode>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<App />} />
+            <Route path="/" element={<Dashboard />} />
             <Route path="/mobile" element={<Mobile />} />
             <Route path="/mobile/campaign/:id" element={<CampaignDetails />} />
             <Route
