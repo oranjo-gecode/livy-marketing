@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 interface ApiResponse<T> {
   success: boolean;
@@ -46,7 +46,7 @@ export const useApi = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchApi = async <T>(url: string): Promise<T> => {
+  const fetchApi = useCallback(async <T>(url: string): Promise<T> => {
     setLoading(true);
     setError(null);
 
@@ -65,33 +65,42 @@ export const useApi = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const getCampaigns = async (): Promise<Campaign[]> => {
+  const getCampaigns = useCallback(async (): Promise<Campaign[]> => {
     return fetchApi<Campaign[]>("/api/campaigns");
-  };
+  }, [fetchApi]);
 
-  const getCampaign = async (id: string): Promise<Campaign> => {
-    return fetchApi<Campaign>(`/api/campaigns/${id}`);
-  };
+  const getCampaign = useCallback(
+    async (id: string): Promise<Campaign> => {
+      return fetchApi<Campaign>(`/api/campaigns/${id}`);
+    },
+    [fetchApi]
+  );
 
-  const getBadges = async (): Promise<Badge[]> => {
+  const getBadges = useCallback(async (): Promise<Badge[]> => {
     return fetchApi<Badge[]>("/api/badges");
-  };
+  }, [fetchApi]);
 
-  const getCampaignBadges = async (campaignId: string): Promise<Badge[]> => {
-    return fetchApi<Badge[]>(`/api/campaigns/${campaignId}/badges`);
-  };
+  const getCampaignBadges = useCallback(
+    async (campaignId: string): Promise<Badge[]> => {
+      return fetchApi<Badge[]>(`/api/campaigns/${campaignId}/badges`);
+    },
+    [fetchApi]
+  );
 
-  const getUserProfile = async (): Promise<UserProfile> => {
+  const getUserProfile = useCallback(async (): Promise<UserProfile> => {
     return fetchApi<UserProfile>("/api/user/profile");
-  };
+  }, [fetchApi]);
 
-  const searchCampaigns = async (query: string): Promise<Campaign[]> => {
-    return fetchApi<Campaign[]>(
-      `/api/campaigns/search?q=${encodeURIComponent(query)}`
-    );
-  };
+  const searchCampaigns = useCallback(
+    async (query: string): Promise<Campaign[]> => {
+      return fetchApi<Campaign[]>(
+        `/api/campaigns/search?q=${encodeURIComponent(query)}`
+      );
+    },
+    [fetchApi]
+  );
 
   return {
     loading,

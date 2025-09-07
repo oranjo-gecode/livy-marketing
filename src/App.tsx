@@ -1,6 +1,7 @@
 import React from 'react'
 import { Routes, Route } from 'react-router'
 import Mobile from './mobile/Mobile'
+import CampaignDetails from './mobile/CampaignDetails'
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
           </div>
         } />
         <Route path="/mobile" element={<Mobile />} />
+        <Route path="/mobile/campaign/:id" element={<CampaignDetails />} />
       </Routes>
     </div>
   )

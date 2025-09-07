@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router';
 import CharacterIcon from '../components/CharacterIcon';
 import Badge from '../components/Badge';
 import BadgeSection from '../components/BadgeSection';
 import SearchButton from '../components/SearchButton';
+import SearchModal from '../components/SearchModal';
 import { useApi } from '../hooks/useApi';
 
 interface Campaign {
@@ -33,10 +35,12 @@ interface UserProfile {
 }
 
 const Mobile: React.FC = () => {
+  const navigate = useNavigate();
   const { loading, error, getCampaigns, getUserProfile } = useApi();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
 
   // Memoize the fetch functions to prevent infinite loops
   const fetchData = useCallback(async () => {
@@ -64,6 +68,14 @@ const Mobile: React.FC = () => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const handleCampaignSelect = (campaign: Campaign) => {
+    navigate(`/mobile/campaign/${campaign.id}`);
+  };
+
+  const handleSearchClick = () => {
+    setIsSearchModalOpen(true);
+  };
 
   console.log('🎯 Mobile component render:', { loading, error, campaigns, userProfile, hasLoaded });
 
@@ -118,55 +130,69 @@ const Mobile: React.FC = () => {
   // Show content when data is loaded
   if (campaigns.length > 0 && userProfile) {
     return (
-      <div className="min-h-screen bg-white">
-        {/* Main container with light gray side margins */}
-        <div className="max-w-md mx-auto bg-gray-50 min-h-screen">
-          {/* Content container */}
-          <div className="px-6 py-8">
-            {/* Header with character icon and ID */}
-            <div className="flex items-center gap-3 mb-6">
-              <CharacterIcon />
-              <span className="text-gray-600 font-medium">ID {userProfile.id}</span>
-            </div>
-
-            {/* Main motto */}
-            <h1 className="text-3xl font-bold text-purple-600 mb-8 text-center">
-              Enjoy today, collect forever
-            </h1>
-
-            {/* Badge viewing section */}
-            <div className="mb-8">
-              <h2 className="text-black font-semibold text-lg mb-2">
-                View your claimed badges
-              </h2>
-              <p className="text-gray-600 mb-6">Your latest badge</p>
-              
-              {/* Large featured badge */}
-              <div className="flex justify-center mb-8">
-                <Badge
-                  size="large"
-                  gradient={userProfile.latestBadge.gradient}
-                />
+      <>
+        <div className="min-h-screen bg-white">
+          {/* Main container with light gray side margins */}
+          <div className="max-w-md mx-auto bg-gray-50 min-h-screen">
+            {/* Content container */}
+            <div className="px-6 py-8">
+              {/* Header with character icon and ID */}
+              <div className="flex items-center gap-3 mb-6">
+                <CharacterIcon />
+                <span className="text-gray-600 font-medium">ID {userProfile.id}</span>
               </div>
-            </div>
 
-            {/* Campaign sections */}
-            {campaigns.map((campaign) => (
-              <BadgeSection
-                key={campaign.id}
-                title={campaign.name}
-                description={campaign.description}
-                badges={campaign.badges.map(badge => ({ gradient: badge.gradient }))}
-              />
-            ))}
+              {/* Main motto */}
+              <h1 className="text-3xl font-bold text-purple-600 mb-8 text-center">
+                Enjoy today, collect forever
+              </h1>
 
-            {/* Search button positioned at bottom right */}
-            <div className="flex justify-end mt-8">
-              <SearchButton />
+              {/* Badge viewing section */}
+              <div className="mb-8">
+                <h2 className="text-black font-semibold text-lg mb-2">
+                  View your claimed badges
+                </h2>
+                <p className="text-gray-600 mb-6">Your latest badge</p>
+                
+                {/* Large featured badge */}
+                <div className="flex justify-center mb-8">
+                  <Badge
+                    size="large"
+                    gradient={userProfile.latestBadge.gradient}
+                  />
+                </div>
+              </div>
+
+              {/* Campaign sections */}
+              {campaigns.map((campaign) => (
+                <div 
+                  key={campaign.id}
+                  onClick={() => handleCampaignSelect(campaign)}
+                  className="cursor-pointer hover:bg-white hover:shadow-md transition-all duration-200 rounded-xl p-1 mb-6"
+                >
+                  <BadgeSection
+                    title={campaign.name}
+                    description={campaign.description}
+                    badges={campaign.badges.map(badge => ({ gradient: badge.gradient }))}
+                  />
+                </div>
+              ))}
+
+              {/* Search button positioned at bottom right */}
+              <div className="flex justify-end mt-8">
+                <SearchButton onClick={handleSearchClick} />
+              </div>
             </div>
           </div>
         </div>
-      </div>
+
+        {/* Search Modal */}
+        <SearchModal
+          isOpen={isSearchModalOpen}
+          onClose={() => setIsSearchModalOpen(false)}
+          onCampaignSelect={handleCampaignSelect}
+        />
+      </>
     );
   }
 
