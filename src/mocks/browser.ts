@@ -20,3 +20,6 @@ worker.events.on("response:mocked", ({ response }) => {
 worker.events.on("request:unhandled", ({ request }) => {
   console.warn("⚠️ MSW Unhandled Request:", request.method, request.url);
 });
+
+// Add more debugging
+console.log("🔧 MSW Worker configured with", handlers.length, "handlers");

@@ -6,7 +6,7 @@ const mockCampaigns = [
     id: "1",
     name: "Coffee Afternoons",
     description: "Starbucks · Britt",
-    badgeCount: 3,
+    badgeCount: 2,
     gradient: "brown" as const,
     badges: [
       { id: "1", gradient: "brown", earnedAt: "2024-01-15T10:30:00Z" },

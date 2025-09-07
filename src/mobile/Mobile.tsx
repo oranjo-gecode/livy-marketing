@@ -191,6 +191,7 @@ const Mobile: React.FC = () => {
           isOpen={isSearchModalOpen}
           onClose={() => setIsSearchModalOpen(false)}
           onCampaignSelect={handleCampaignSelect}
+          campaigns={campaigns}
         />
       </>
     );

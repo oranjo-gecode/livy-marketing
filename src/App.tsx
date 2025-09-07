@@ -1,7 +1,7 @@
-import React from 'react'
 import { Routes, Route } from 'react-router'
 import Mobile from './mobile/Mobile'
 import CampaignDetails from './mobile/CampaignDetails'
+import BadgeSuccess from './mobile/BadgeSuccess'
 
 function App() {
   return (
@@ -15,6 +15,7 @@ function App() {
         } />
         <Route path="/mobile" element={<Mobile />} />
         <Route path="/mobile/campaign/:id" element={<CampaignDetails />} />
+        <Route path="/mobile/badge-success" element={<BadgeSuccess campaignName="Tech Meetups" badgeGradient="orange-purple" onClose={() => window.history.back()} />} />
       </Routes>
     </div>
   )
