@@ -9,11 +9,13 @@ interface LivyItem {
 interface SideNavigationProps {
   livys?: LivyItem[];
   onLivySelect?: (livyId: string) => void;
+  selectedLivyId?: string;
 }
 
 const SideNavigation: React.FC<SideNavigationProps> = ({ 
   livys = [], 
-  onLivySelect 
+  onLivySelect,
+  selectedLivyId
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -26,7 +28,7 @@ const SideNavigation: React.FC<SideNavigationProps> = ({
     if (onLivySelect) {
       onLivySelect(livyId);
     } else {
-      navigate(`/livy/${livyId}`);
+      navigate(`/dashboard/livy/${livyId}`);
     }
   };
 
@@ -57,15 +59,22 @@ const SideNavigation: React.FC<SideNavigationProps> = ({
           Livy's
         </h2>
         <div className="space-y-1">
-          {livys.map((livy) => (
-            <button
-              key={livy.id}
-              onClick={() => handleLivyClick(livy.id)}
-              className="w-full text-left px-3 py-2 rounded-md text-sm text-gray-600 hover:bg-gray-200 hover:text-gray-900 transition-colors"
-            >
-              {livy.name}
-            </button>
-          ))}
+          {livys.map((livy) => {
+            const isSelected = selectedLivyId === livy.id;
+            return (
+              <button
+                key={livy.id}
+                onClick={() => handleLivyClick(livy.id)}
+                className={`w-full text-left px-3 py-2 rounded-md text-sm transition-colors ${
+                  isSelected 
+                    ? 'bg-gray-200 text-gray-900' 
+                    : 'text-gray-600 hover:bg-gray-200 hover:text-gray-900'
+                }`}
+              >
+                {livy.name}
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router';
 import Header from '../components/Header';
 import SideNavigation from '../components/SideNavigation';
 import KPISection from './containers/KPISection';
@@ -45,6 +46,7 @@ interface DashboardData {
 }
 
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
   const { loading, error, getDashboardData } = useApi();
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
@@ -72,7 +74,7 @@ const Dashboard: React.FC = () => {
 
   const handleLivySelect = (livyId: string) => {
     console.log('Selected Livy:', livyId);
-    // Navigate to individual Livy page
+    navigate(`/dashboard/livy/${livyId}`);
   };
 
   const handleDownloadCSV = () => {

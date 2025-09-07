@@ -11,6 +11,7 @@ import LivyConfiguration from "./builder/containers/LivyConfiguration.tsx";
 import CollaborationMap from "./builder/containers/CollaborationMap.tsx";
 import Stamp from "./builder/containers/Stamp.tsx";
 import Dashboard from "./dashboard/Dashboard.tsx";
+import LivyDashboard from "./dashboard/containers/LivyDashboard.tsx";
 
 // Start MSW and then render the app
 async function bootstrap() {
@@ -32,6 +33,7 @@ async function bootstrap() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Dashboard />} />
+            <Route path="/dashboard/livy/:id" element={<LivyDashboard />} />
             <Route path="/mobile" element={<Mobile />} />
             <Route path="/mobile/campaign/:id" element={<CampaignDetails />} />
             <Route
