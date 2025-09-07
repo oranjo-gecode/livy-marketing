@@ -42,6 +42,43 @@ interface UserProfile {
   };
 }
 
+interface DashboardKPIs {
+  activeLivys: number;
+  claimedStamps: number;
+}
+
+interface LivyStatus {
+  id: string;
+  name: string;
+  status: 'activo' | 'inactivo' | 'finalizado';
+  collaborators: string[];
+  startDate: string;
+  endDate: string;
+}
+
+interface StampsData {
+  month: string;
+  livy1: number;
+  livy2: number;
+  livy3: number;
+}
+
+interface Buyer {
+  id: string;
+  position: number;
+  address: string;
+  location: string;
+  nftsClaimed: number;
+  trend?: 'up' | 'down';
+}
+
+interface DashboardData {
+  kpis: DashboardKPIs;
+  livys: LivyStatus[];
+  chartData: StampsData[];
+  buyers: Buyer[];
+}
+
 export const useApi = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -102,6 +139,10 @@ export const useApi = () => {
     [fetchApi]
   );
 
+  const getDashboardData = useCallback(async (): Promise<DashboardData> => {
+    return fetchApi<DashboardData>("/api/dashboard");
+  }, [fetchApi]);
+
   return {
     loading,
     error,
@@ -111,5 +152,6 @@ export const useApi = () => {
     getCampaignBadges,
     getUserProfile,
     searchCampaigns,
+    getDashboardData,
   };
 };

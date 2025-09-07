@@ -1,72 +1,75 @@
-import React from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Header from '../components/Header';
 import SideNavigation from '../components/SideNavigation';
 import KPISection from './containers/KPISection';
 import LivyStatusTable from './containers/LivyStatusTable';
 import StampsChart from './containers/StampsChart';
 import BuyerRankingTable from './containers/BuyerRankingTable';
+import { useApi } from '../hooks/useApi';
 
-// Mock data - in a real app, this would come from an API
-const mockData = {
-  kpis: {
-    activeLivys: 3,
-    claimedStamps: 13075
-  },
-  livys: [
-    {
-      id: '1',
-      name: 'Sip & Paint vol.2',
-      status: 'activo' as const,
-      collaborators: ['Bacano Escalante', 'Jogo'],
-      startDate: '2024-01-15',
-      endDate: '2024-02-15'
-    },
-    {
-      id: '2', 
-      name: 'Sip & Paint vol.1',
-      status: 'inactivo' as const,
-      collaborators: ['Rosti Spoon'],
-      startDate: '2023-12-01',
-      endDate: '2023-12-31'
-    },
-    {
-      id: '3',
-      name: 'Summer Pass',
-      status: 'activo' as const,
-      collaborators: ['Bacano Escalante', 'Jogo', 'Rosti Spoon'],
-      startDate: '2024-01-01',
-      endDate: '2024-03-31'
-    },
-    {
-      id: '4',
-      name: 'Hola Navidad!',
-      status: 'finalizado' as const,
-      collaborators: ['Bacano Escalante'],
-      startDate: '2023-12-01',
-      endDate: '2023-12-25'
-    }
-  ],
-  chartData: [
-    { month: 'jul', livy1: 1200, livy2: 800, livy3: 600 },
-    { month: 'ago', livy1: 1400, livy2: 900, livy3: 700 },
-    { month: 'set', livy1: 1600, livy2: 1100, livy3: 800 },
-    { month: 'oct', livy1: 1800, livy2: 1300, livy3: 900 }
-  ],
-  buyers: [
-    { id: '1', position: 1, address: 'ID123', location: 'Restaurante 12/0', nftsClaimed: 98, trend: 'up' as const },
-    { id: '2', position: 2, address: 'ID124', location: 'Plaza del sol', nftsClaimed: 94, trend: 'down' as const },
-    { id: '3', position: 3, address: 'ID125', location: 'Galería x', nftsClaimed: 91, trend: 'up' as const },
-    { id: '4', position: 4, address: 'ID126', location: 'Restaurante 12/0', nftsClaimed: 87 },
-    { id: '5', position: 5, address: 'ID127', location: 'Plaza del sol', nftsClaimed: 82, trend: 'up' as const },
-    { id: '6', position: 6, address: 'ID128', location: 'Galería x', nftsClaimed: 78 },
-    { id: '7', position: 7, address: 'ID129', location: 'Restaurante 12/0', nftsClaimed: 75, trend: 'down' as const },
-    { id: '8', position: 8, address: 'ID130', location: 'Plaza del sol', nftsClaimed: 72 },
-    { id: '9', position: 9, address: 'ID131', location: 'Galería x', nftsClaimed: 69, trend: 'up' as const },
-    { id: '10', position: 10, address: 'ID132', location: 'Restaurante 12/0', nftsClaimed: 65 }
-  ]
-};
+interface DashboardKPIs {
+  activeLivys: number;
+  claimedStamps: number;
+}
+
+interface LivyStatus {
+  id: string;
+  name: string;
+  status: 'activo' | 'inactivo' | 'finalizado';
+  collaborators: string[];
+  startDate: string;
+  endDate: string;
+}
+
+interface StampsData {
+  month: string;
+  livy1: number;
+  livy2: number;
+  livy3: number;
+}
+
+interface Buyer {
+  id: string;
+  position: number;
+  address: string;
+  location: string;
+  nftsClaimed: number;
+  trend?: 'up' | 'down';
+}
+
+interface DashboardData {
+  kpis: DashboardKPIs;
+  livys: LivyStatus[];
+  chartData: StampsData[];
+  buyers: Buyer[];
+}
 
 const Dashboard: React.FC = () => {
+  const { loading, error, getDashboardData } = useApi();
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [hasLoaded, setHasLoaded] = useState(false);
+
+  const fetchDashboardData = useCallback(async () => {
+    if (hasLoaded) return; // Prevent multiple fetches
+    
+    console.log('🔄 Starting to fetch dashboard data...');
+    try {
+      console.log('📡 Fetching dashboard data...');
+      const data = await getDashboardData();
+      console.log('✅ Dashboard data fetched:', data);
+      
+      setDashboardData(data);
+      setHasLoaded(true);
+    } catch (err) {
+      console.error('❌ Error fetching dashboard data:', err);
+      setHasLoaded(true); // Mark as loaded even on error
+    }
+  }, [getDashboardData, hasLoaded]);
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, [fetchDashboardData]);
+
   const handleLivySelect = (livyId: string) => {
     console.log('Selected Livy:', livyId);
     // Navigate to individual Livy page
@@ -77,48 +80,113 @@ const Dashboard: React.FC = () => {
     // Implement CSV download functionality
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <Header 
-        userName="Maria Perez"
-        businessName="Restaurante 12/0."
-        userInitials="MP"
-      />
-      
-      <div className="flex">
-        {/* Side Navigation */}
-        <SideNavigation 
-          livys={mockData.livys.map(livy => ({ id: livy.id, name: livy.name }))}
-          onLivySelect={handleLivySelect}
+  // Show loading state
+  if (loading && !hasLoaded) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error && !hasLoaded) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Failed to Load Dashboard</h2>
+          <p className="text-gray-600 mb-4 max-w-md">
+            There was an error loading the dashboard data. This might be due to a network issue or the mock service not being properly configured.
+          </p>
+          <div className="space-y-2 mb-6">
+            <p className="text-sm text-gray-500">Error details: {error}</p>
+            <p className="text-sm text-gray-500">Check the browser console for more information.</p>
+          </div>
+          <button 
+            onClick={() => {
+              setHasLoaded(false);
+              fetchDashboardData();
+            }} 
+            className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show content when data is loaded
+  if (dashboardData) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {/* Header */}
+        <Header 
+          userName="Maria Perez"
+          businessName="Restaurante 12/0."
+          userInitials="MP"
         />
         
-        {/* Main Content */}
-        <div className="flex-1 p-8">
-          {/* Page Header */}
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-gray-900">Resumen de Restaurante 12/0</h1>
-            <p className="text-gray-600 mt-1">Un vistazo global de tu rendimiento</p>
+        <div className="flex">
+          {/* Side Navigation */}
+          <SideNavigation 
+            livys={dashboardData.livys.map((livy: LivyStatus) => ({ id: livy.id, name: livy.name }))}
+            onLivySelect={handleLivySelect}
+          />
+          
+          {/* Main Content */}
+          <div className="flex-1 p-8">
+            {/* Page Header */}
+            <div className="mb-8">
+              <h1 className="text-2xl font-bold text-gray-900">Resumen de Restaurante 12/0</h1>
+              <p className="text-gray-600 mt-1">Un vistazo global de tu rendimiento</p>
+            </div>
+
+            {/* KPI Cards */}
+            <KPISection 
+              activeLivys={dashboardData.kpis.activeLivys}
+              claimedStamps={dashboardData.kpis.claimedStamps}
+            />
+
+            {/* Livy Status Table */}
+            <LivyStatusTable livys={dashboardData.livys} />
+
+            {/* Stamps Chart */}
+            <StampsChart data={dashboardData.chartData} />
+
+            {/* Buyer Ranking Table */}
+            <BuyerRankingTable 
+              buyers={dashboardData.buyers}
+              onDownloadCSV={handleDownloadCSV}
+            />
           </div>
-
-          {/* KPI Cards */}
-          <KPISection 
-            activeLivys={mockData.kpis.activeLivys}
-            claimedStamps={mockData.kpis.claimedStamps}
-          />
-
-          {/* Livy Status Table */}
-          <LivyStatusTable livys={mockData.livys} />
-
-          {/* Stamps Chart */}
-          <StampsChart data={mockData.chartData} />
-
-          {/* Buyer Ranking Table */}
-          <BuyerRankingTable 
-            buyers={mockData.buyers}
-            onDownloadCSV={handleDownloadCSV}
-          />
         </div>
+      </div>
+    );
+  }
+
+  // Show empty state if no data loaded
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-center">
+        <div className="text-gray-400 text-6xl mb-4">📊</div>
+        <h2 className="text-xl font-semibold text-gray-800 mb-2">No Dashboard Data Available</h2>
+        <p className="text-gray-600 mb-4">
+          No dashboard data was loaded. Please check your connection and try again.
+        </p>
+        <button 
+          onClick={() => {
+            setHasLoaded(false);
+            fetchDashboardData();
+          }} 
+          className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+        >
+          Refresh Page
+        </button>
       </div>
     </div>
   );
