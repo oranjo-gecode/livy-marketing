@@ -5,7 +5,8 @@ import "./index.css";
 import App from "./App.tsx";
 import { startMocks } from "./mocks";
 import Mobile from "./mobile/Mobile.tsx";
-import CampaignDetails from './mobile/CampaignDetails'
+import CampaignDetails from "./mobile/CampaignDetails";
+import BadgeSuccess from "./mobile/BadgeSuccess.tsx";
 import BuilderLayout from "./builder/BuilderLayout.tsx";
 import LivyConfiguration from "./builder/containers/LivyConfiguration.tsx";
 import CollaborationMap from "./builder/containers/CollaborationMap.tsx";
@@ -15,13 +16,13 @@ import Stamp from "./builder/containers/Stamp.tsx";
 async function bootstrap() {
   try {
     if (import.meta.env.DEV) {
-      console.log('🚀 Starting MSW...')
+      console.log("🚀 Starting MSW...");
       // Wait for MSW to start before rendering the app
-      const mswStarted = await startMocks()
+      const mswStarted = await startMocks();
       if (mswStarted) {
-        console.log('✅ MSW started successfully')
+        console.log("✅ MSW started successfully");
       } else {
-        console.warn('⚠️ MSW failed to start, continuing without mocks')
+        console.warn("⚠️ MSW failed to start, continuing without mocks");
       }
     }
 
@@ -33,6 +34,16 @@ async function bootstrap() {
             <Route path="/" element={<App />} />
             <Route path="/mobile" element={<Mobile />} />
             <Route path="/mobile/campaign/:id" element={<CampaignDetails />} />
+            <Route
+              path="/mobile/badge-success"
+              element={
+                <BadgeSuccess
+                  campaignName="Tech Meetups"
+                  badgeGradient="orange-purple"
+                  onClose={() => window.history.back()}
+                />
+              }
+            />
             <Route path="/builder" element={<BuilderLayout />}>
               <Route index element={<LivyConfiguration />} />
               <Route path="map" element={<CollaborationMap />} />
