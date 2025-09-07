@@ -42,7 +42,6 @@ interface UserProfile {
   };
 }
 
-<<<<<<< HEAD
 interface CampaignRanking {
   campaignId: string;
   position: number;
@@ -67,7 +66,8 @@ interface CampaignPrizes {
   availablePrizes: number;
   userPoints: number;
   prizes: Prize[];
-=======
+}
+
 interface DashboardKPIs {
   activeLivys: number;
   claimedStamps: number;
@@ -76,7 +76,7 @@ interface DashboardKPIs {
 interface LivyStatus {
   id: string;
   name: string;
-  status: 'activo' | 'inactivo' | 'finalizado';
+  status: "activo" | "inactivo" | "finalizado";
   collaborators: string[];
   startDate: string;
   endDate: string;
@@ -95,7 +95,7 @@ interface Buyer {
   address: string;
   location: string;
   nftsClaimed: number;
-  trend?: 'up' | 'down';
+  trend?: "up" | "down";
 }
 
 interface DashboardData {
@@ -103,7 +103,60 @@ interface DashboardData {
   livys: LivyStatus[];
   chartData: StampsData[];
   buyers: Buyer[];
->>>>>>> 20bd1f0d3be2113a57482697edcad972c5a12178
+}
+
+interface LivyKPIs {
+  totalClaimedStamps: number;
+  lastWeekStamps: number;
+  mostPopularStamp: {
+    name: string;
+    count: number;
+    gradient: string;
+  };
+}
+
+interface MapLocation {
+  id: string;
+  name: string;
+  nftsGenerated: number;
+  lastWeekNfts: number;
+  coordinates: { x: number; y: number };
+}
+
+interface Collaborator {
+  id: string;
+  name: string;
+  status: "activo" | "inactivo" | "en proceso";
+}
+
+interface LocationRanking {
+  id: string;
+  name: string;
+  nftsGenerated: number;
+}
+
+interface BuyerRanking {
+  id: string;
+  position: number;
+  address: string;
+  nftsClaimed: number;
+  trend?: "up" | "down";
+}
+
+interface AllLivy {
+  id: string;
+  name: string;
+}
+
+interface LivyData {
+  id: string;
+  name: string;
+  kpis: LivyKPIs;
+  mapLocations: MapLocation[];
+  collaborators: Collaborator[];
+  locationRanking: LocationRanking[];
+  buyerRanking: BuyerRanking[];
+  allLivys: AllLivy[];
 }
 
 export const useApi = () => {
@@ -166,7 +219,6 @@ export const useApi = () => {
     [fetchApi]
   );
 
-<<<<<<< HEAD
   const getCampaignRanking = useCallback(
     async (campaignId: string): Promise<CampaignRanking> => {
       return fetchApi<CampaignRanking>(`/api/campaigns/${campaignId}/ranking`);
@@ -180,15 +232,17 @@ export const useApi = () => {
     },
     [fetchApi]
   );
-=======
+
   const getDashboardData = useCallback(async (): Promise<DashboardData> => {
     return fetchApi<DashboardData>("/api/dashboard");
   }, [fetchApi]);
 
-  const getLivyData = useCallback(async (livyId: string): Promise<any> => {
-    return fetchApi<any>(`/api/livy/${livyId}`);
-  }, [fetchApi]);
->>>>>>> 20bd1f0d3be2113a57482697edcad972c5a12178
+  const getLivyData = useCallback(
+    async (livyId: string): Promise<LivyData> => {
+      return fetchApi<LivyData>(`/api/livy/${livyId}`);
+    },
+    [fetchApi]
+  );
 
   return {
     loading,
@@ -199,12 +253,9 @@ export const useApi = () => {
     getCampaignBadges,
     getUserProfile,
     searchCampaigns,
-<<<<<<< HEAD
     getCampaignRanking,
     getCampaignPrizes,
-=======
     getDashboardData,
     getLivyData,
->>>>>>> 20bd1f0d3be2113a57482697edcad972c5a12178
   };
 };

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { Routes, Route } from 'react-router'
 import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -6,6 +5,12 @@ import Login from './pages/Login'
 import Mobile from './mobile/Mobile'
 import CampaignDetails from './mobile/CampaignDetails'
 import BadgeSuccess from './mobile/BadgeSuccess'
+import Dashboard from './dashboard/Dashboard'
+import LivyDashboard from './dashboard/containers/LivyDashboard'
+import BuilderLayout from './builder/BuilderLayout'
+import LivyConfiguration from './builder/containers/LivyConfiguration'
+import CollaborationMap from './builder/containers/CollaborationMap'
+import Stamp from './builder/containers/Stamp'
 
 function App() {
   return (
@@ -13,12 +18,8 @@ function App() {
       <div className="App">
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route path="/" element={
-            <div className="home-page">
-              <h1>Welcome to Livy Marketing</h1>
-              <p>This is the main page. Navigate to <a href="/mobile">/mobile</a> to see the mobile version.</p>
-            </div>
-          } />
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/dashboard/livy/:id" element={<LivyDashboard />} />
           <Route path="/mobile" element={
             <ProtectedRoute>
               <Mobile />
@@ -34,24 +35,15 @@ function App() {
               <BadgeSuccess campaignName="Tech Meetups" badgeGradient="orange-purple" onClose={() => window.history.back()} />
             </ProtectedRoute>
           } />
+          <Route path="/builder" element={<BuilderLayout />}>
+            <Route index element={<LivyConfiguration />} />
+            <Route path="map" element={<CollaborationMap />} />
+            <Route path="stamp" element={<Stamp />} />
+          </Route>
         </Routes>
       </div>
     </AuthProvider>
   )
-=======
-function App() {
-  return (
-    <div className="App">
-      <div className="home-page">
-        <h1>Welcome to Livy Marketing</h1>
-        <p>
-          This is the main page. Navigate to <a href="/mobile">/mobile</a> to
-          see the mobile version.
-        </p>
-      </div>
-    </div>
-  );
->>>>>>> 20bd1f0d3be2113a57482697edcad972c5a12178
 }
 
 export default App;
