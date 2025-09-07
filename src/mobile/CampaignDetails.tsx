@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router';
 import Badge from '../components/Badge';
+import PrizesModal from '../components/PrizesModal';
+import ScanModal from '../components/ScanModal';
+import QRScanner from '../components/QRScanner';
+import InvoiceScanner from '../components/InvoiceScanner';
+import ScanSuccessModal from '../components/ScanSuccessModal';
 import { useApi } from '../hooks/useApi';
 
 interface Campaign {
@@ -23,6 +28,13 @@ const CampaignDetails: React.FC = () => {
   const [campaign, setCampaign] = useState<Campaign | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isPrizesModalOpen, setIsPrizesModalOpen] = useState(false);
+  const [isScanModalOpen, setIsScanModalOpen] = useState(false);
+  const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
+  const [isInvoiceScannerOpen, setIsInvoiceScannerOpen] = useState(false);
+  const [isScanSuccessOpen, setIsScanSuccessOpen] = useState(false);
+  const [scanResult, setScanResult] = useState<any>(null);
+  const [scanType, setScanType] = useState<'qr' | 'invoice'>('qr');
 
   useEffect(() => {
     const fetchCampaign = async () => {
@@ -64,6 +76,44 @@ const CampaignDetails: React.FC = () => {
       default:
         return 'from-orange-400 to-purple-500';
     }
+  };
+
+  // Calculate total points (10 points per badge)
+  const totalPoints = campaign ? campaign.badgeCount * 10 : 0;
+
+  const handleQRScan = () => {
+    setIsScanModalOpen(false);
+    setIsQRScannerOpen(true);
+  };
+
+  const handleInvoiceScan = () => {
+    setIsScanModalOpen(false);
+    setIsInvoiceScannerOpen(true);
+  };
+
+  const handleQRScanSuccess = (data: string) => {
+    setIsQRScannerOpen(false);
+    setScanResult({ campaign: campaign?.name, badgeType: 'Participation', qrData: data });
+    setScanType('qr');
+    setIsScanSuccessOpen(true);
+  };
+
+  const handleInvoiceScanSuccess = (data: any) => {
+    setIsInvoiceScannerOpen(false);
+    setScanResult(data);
+    setScanType('invoice');
+    setIsScanSuccessOpen(true);
+  };
+
+  const handleScanSuccessClose = () => {
+    setIsScanSuccessOpen(false);
+    setScanResult(null);
+  };
+
+  const handleViewBadge = () => {
+    setIsScanSuccessOpen(false);
+    // Navigate to badge success page or show badge details
+    navigate('/mobile/badge-success');
   };
 
   if (loading) {
@@ -113,7 +163,7 @@ const CampaignDetails: React.FC = () => {
         </div>
         
         {/* Campaign Stats */}
-        <div className="bg-white bg-opacity-20 rounded-xl p-4">
+        <div className="bg-white bg-opacity-20 rounded-xl p-4 mb-4">
           <div className="flex items-center justify-between">
             <div className="text-center">
               <div className="text-2xl font-bold">{campaign.badgeCount}</div>
@@ -130,6 +180,28 @@ const CampaignDetails: React.FC = () => {
               <div className="text-sm text-purple-100">Completion</div>
             </div>
           </div>
+        </div>
+
+        {/* Points Counter and Prizes Button */}
+        <div className="flex items-center justify-between">
+          <div className="bg-white bg-opacity-20 rounded-xl p-4 flex-1 mr-3">
+            <div className="flex items-center gap-3">
+              <div className="text-3xl">⭐</div>
+              <div>
+                <div className="text-2xl font-bold">{totalPoints}</div>
+                <div className="text-sm text-purple-100">Total Points</div>
+              </div>
+            </div>
+          </div>
+          <button
+            onClick={() => setIsPrizesModalOpen(true)}
+            className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-xl p-4 transition-all"
+          >
+            <div className="text-center">
+              <div className="text-2xl mb-1">🎁</div>
+              <div className="text-xs text-purple-100">Prizes</div>
+            </div>
+          </button>
         </div>
       </div>
 
@@ -151,9 +223,18 @@ const CampaignDetails: React.FC = () => {
                 ></div>
               </div>
             </div>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-600 mb-4">
               You're making great progress! Keep earning badges to complete this campaign.
             </p>
+            
+            {/* Scan Button */}
+            <button
+              onClick={() => setIsScanModalOpen(true)}
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white py-3 px-4 rounded-xl font-medium hover:from-purple-700 hover:to-blue-700 transition-all flex items-center justify-center gap-2"
+            >
+              <div className="text-xl">📱</div>
+              <span>Scan to Earn Points</span>
+            </button>
           </div>
 
           {/* Badges Section */}
@@ -211,6 +292,45 @@ const CampaignDetails: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Prizes Modal */}
+      <PrizesModal
+        isOpen={isPrizesModalOpen}
+        onClose={() => setIsPrizesModalOpen(false)}
+        totalPoints={totalPoints}
+      />
+
+      {/* Scan Modal */}
+      <ScanModal
+        isOpen={isScanModalOpen}
+        onClose={() => setIsScanModalOpen(false)}
+        onQRScan={handleQRScan}
+        onInvoiceScan={handleInvoiceScan}
+      />
+
+      {/* QR Scanner */}
+      <QRScanner
+        isOpen={isQRScannerOpen}
+        onClose={() => setIsQRScannerOpen(false)}
+        onScanSuccess={handleQRScanSuccess}
+      />
+
+      {/* Invoice Scanner */}
+      <InvoiceScanner
+        isOpen={isInvoiceScannerOpen}
+        onClose={() => setIsInvoiceScannerOpen(false)}
+        onScanSuccess={handleInvoiceScanSuccess}
+      />
+
+      {/* Scan Success Modal */}
+      <ScanSuccessModal
+        isOpen={isScanSuccessOpen}
+        onClose={handleScanSuccessClose}
+        type={scanType}
+        data={scanResult}
+        pointsEarned={scanType === 'qr' ? 10 : scanResult?.points || 0}
+        onViewBadge={scanType === 'qr' ? handleViewBadge : undefined}
+      />
     </div>
   );
 };

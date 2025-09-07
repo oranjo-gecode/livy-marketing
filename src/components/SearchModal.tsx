@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useApi } from '../hooks/useApi';
 
 interface Campaign {
   id: string;
@@ -18,20 +17,25 @@ interface SearchModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCampaignSelect: (campaign: Campaign) => void;
+  campaigns: Campaign[];
 }
 
-const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, onCampaignSelect }) => {
+const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, onCampaignSelect, campaigns }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Campaign[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const { searchCampaigns } = useApi();
 
   useEffect(() => {
     if (searchQuery.trim()) {
       setIsSearching(true);
-      const timeoutId = setTimeout(async () => {
+      const timeoutId = setTimeout(() => {
         try {
-          const results = await searchCampaigns(searchQuery);
+          // Local filtering instead of API call
+          const results = campaigns.filter(
+            (campaign) =>
+              campaign.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              campaign.description.toLowerCase().includes(searchQuery.toLowerCase())
+          );
           setSearchResults(results);
         } catch (error) {
           console.error('Search failed:', error);
@@ -46,7 +50,7 @@ const SearchModal: React.FC<SearchModalProps> = ({ isOpen, onClose, onCampaignSe
       setSearchResults([]);
       setIsSearching(false);
     }
-  }, [searchQuery]);
+  }, [searchQuery, campaigns]);
 
   const handleCampaignSelect = (campaign: Campaign) => {
     onCampaignSelect(campaign);

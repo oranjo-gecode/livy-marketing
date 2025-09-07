@@ -16,12 +16,19 @@ export const startMocks = async () => {
         serviceWorker: {
           url: "/mockServiceWorker.js",
         },
+        waitUntilReady: true,
       });
 
       console.log("🔶 MSW started in development mode");
+      console.log(
+        "🔶 Available handlers:",
+        worker.listHandlers().length,
+        "handlers registered"
+      );
       return true;
     } catch (error) {
       console.error("❌ Failed to start MSW:", error);
+      console.error("❌ Error details:", error);
       return false;
     }
   }

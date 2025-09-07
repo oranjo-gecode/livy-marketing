@@ -15,11 +15,14 @@ import Stamp from "./builder/containers/Stamp.tsx";
 async function bootstrap() {
   try {
     if (import.meta.env.DEV) {
-      console.log("🚀 Starting MSW...");
-      // Start MSW but don't wait for it to complete
-      startMocks().catch((error) => {
-        console.warn("⚠️ MSW failed to start:", error);
-      });
+      console.log('🚀 Starting MSW...')
+      // Wait for MSW to start before rendering the app
+      const mswStarted = await startMocks()
+      if (mswStarted) {
+        console.log('✅ MSW started successfully')
+      } else {
+        console.warn('⚠️ MSW failed to start, continuing without mocks')
+      }
     }
 
     console.log("🎨 Rendering app...");
