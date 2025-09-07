@@ -42,6 +42,7 @@ interface UserProfile {
   };
 }
 
+<<<<<<< HEAD
 interface CampaignRanking {
   campaignId: string;
   position: number;
@@ -66,6 +67,43 @@ interface CampaignPrizes {
   availablePrizes: number;
   userPoints: number;
   prizes: Prize[];
+=======
+interface DashboardKPIs {
+  activeLivys: number;
+  claimedStamps: number;
+}
+
+interface LivyStatus {
+  id: string;
+  name: string;
+  status: 'activo' | 'inactivo' | 'finalizado';
+  collaborators: string[];
+  startDate: string;
+  endDate: string;
+}
+
+interface StampsData {
+  month: string;
+  livy1: number;
+  livy2: number;
+  livy3: number;
+}
+
+interface Buyer {
+  id: string;
+  position: number;
+  address: string;
+  location: string;
+  nftsClaimed: number;
+  trend?: 'up' | 'down';
+}
+
+interface DashboardData {
+  kpis: DashboardKPIs;
+  livys: LivyStatus[];
+  chartData: StampsData[];
+  buyers: Buyer[];
+>>>>>>> 20bd1f0d3be2113a57482697edcad972c5a12178
 }
 
 export const useApi = () => {
@@ -128,6 +166,7 @@ export const useApi = () => {
     [fetchApi]
   );
 
+<<<<<<< HEAD
   const getCampaignRanking = useCallback(
     async (campaignId: string): Promise<CampaignRanking> => {
       return fetchApi<CampaignRanking>(`/api/campaigns/${campaignId}/ranking`);
@@ -141,6 +180,15 @@ export const useApi = () => {
     },
     [fetchApi]
   );
+=======
+  const getDashboardData = useCallback(async (): Promise<DashboardData> => {
+    return fetchApi<DashboardData>("/api/dashboard");
+  }, [fetchApi]);
+
+  const getLivyData = useCallback(async (livyId: string): Promise<any> => {
+    return fetchApi<any>(`/api/livy/${livyId}`);
+  }, [fetchApi]);
+>>>>>>> 20bd1f0d3be2113a57482697edcad972c5a12178
 
   return {
     loading,
@@ -151,7 +199,12 @@ export const useApi = () => {
     getCampaignBadges,
     getUserProfile,
     searchCampaigns,
+<<<<<<< HEAD
     getCampaignRanking,
     getCampaignPrizes,
+=======
+    getDashboardData,
+    getLivyData,
+>>>>>>> 20bd1f0d3be2113a57482697edcad972c5a12178
   };
 };

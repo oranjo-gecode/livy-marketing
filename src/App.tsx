@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { Routes, Route } from 'react-router'
 import { AuthProvider } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -37,6 +38,20 @@ function App() {
       </div>
     </AuthProvider>
   )
+=======
+function App() {
+  return (
+    <div className="App">
+      <div className="home-page">
+        <h1>Welcome to Livy Marketing</h1>
+        <p>
+          This is the main page. Navigate to <a href="/mobile">/mobile</a> to
+          see the mobile version.
+        </p>
+      </div>
+    </div>
+  );
+>>>>>>> 20bd1f0d3be2113a57482697edcad972c5a12178
 }
 
-export default App
+export default App;
