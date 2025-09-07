@@ -6,6 +6,7 @@ import BadgeSection from '../components/BadgeSection';
 import SearchButton from '../components/SearchButton';
 import SearchModal from '../components/SearchModal';
 import { useApi } from '../hooks/useApi';
+import { useAuth } from '../contexts/AuthContext';
 
 interface Campaign {
   id: string;
@@ -36,6 +37,7 @@ interface UserProfile {
 
 const Mobile: React.FC = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
   const { loading, error, getCampaigns, getUserProfile } = useApi();
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -75,6 +77,11 @@ const Mobile: React.FC = () => {
 
   const handleSearchClick = () => {
     setIsSearchModalOpen(true);
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
   };
 
   console.log('🎯 Mobile component render:', { loading, error, campaigns, userProfile, hasLoaded });
@@ -136,10 +143,28 @@ const Mobile: React.FC = () => {
           <div className="max-w-md mx-auto bg-gray-50 min-h-screen">
             {/* Content container */}
             <div className="px-6 py-8">
-              {/* Header with character icon and ID */}
-              <div className="flex items-center gap-3 mb-6">
-                <CharacterIcon />
-                <span className="text-gray-600 font-medium">ID {userProfile.id}</span>
+              {/* Header with character icon, ID, and logout */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3">
+                  <CharacterIcon />
+                  <div>
+                    <span className="text-gray-600 font-medium">ID {userProfile.id}</span>
+                    {user && (
+                      <div className="text-sm text-gray-500">
+                        {user.name} • {user.provider.charAt(0).toUpperCase() + user.provider.slice(1)}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <button
+                  onClick={handleLogout}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  title="Logout"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                </button>
               </div>
 
               {/* Main motto */}

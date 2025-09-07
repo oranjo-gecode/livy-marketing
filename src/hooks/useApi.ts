@@ -42,6 +42,32 @@ interface UserProfile {
   };
 }
 
+interface CampaignRanking {
+  campaignId: string;
+  position: number;
+  totalParticipants: number;
+  userBadges: number;
+  topParticipantBadges: number;
+}
+
+interface Prize {
+  id: string;
+  name: string;
+  description: string;
+  pointsRequired: number;
+  imageUrl?: string;
+  isAvailable: boolean;
+  category: "discount" | "freebie" | "experience" | "merchandise";
+}
+
+interface CampaignPrizes {
+  campaignId: string;
+  totalPrizes: number;
+  availablePrizes: number;
+  userPoints: number;
+  prizes: Prize[];
+}
+
 export const useApi = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -102,6 +128,20 @@ export const useApi = () => {
     [fetchApi]
   );
 
+  const getCampaignRanking = useCallback(
+    async (campaignId: string): Promise<CampaignRanking> => {
+      return fetchApi<CampaignRanking>(`/api/campaigns/${campaignId}/ranking`);
+    },
+    [fetchApi]
+  );
+
+  const getCampaignPrizes = useCallback(
+    async (campaignId: string): Promise<CampaignPrizes> => {
+      return fetchApi<CampaignPrizes>(`/api/campaigns/${campaignId}/prizes`);
+    },
+    [fetchApi]
+  );
+
   return {
     loading,
     error,
@@ -111,5 +151,7 @@ export const useApi = () => {
     getCampaignBadges,
     getUserProfile,
     searchCampaigns,
+    getCampaignRanking,
+    getCampaignPrizes,
   };
 };

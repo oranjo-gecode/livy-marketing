@@ -10,7 +10,6 @@ const QRScanner: React.FC<QRScannerProps> = ({ isOpen, onScanSuccess, onClose })
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {

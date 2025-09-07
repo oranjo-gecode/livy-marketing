@@ -8,6 +8,24 @@ import InvoiceScanner from '../components/InvoiceScanner';
 import ScanSuccessModal from '../components/ScanSuccessModal';
 import { useApi } from '../hooks/useApi';
 
+interface Prize {
+  id: string;
+  name: string;
+  description: string;
+  pointsRequired: number;
+  imageUrl?: string;
+  isAvailable: boolean;
+  category: 'discount' | 'freebie' | 'experience' | 'merchandise';
+}
+
+interface CampaignPrizes {
+  campaignId: string;
+  totalPrizes: number;
+  availablePrizes: number;
+  userPoints: number;
+  prizes: Prize[];
+}
+
 interface Campaign {
   id: string;
   name: string;
@@ -21,11 +39,20 @@ interface Campaign {
   }>;
 }
 
+interface CampaignRanking {
+  campaignId: string;
+  position: number;
+  totalParticipants: number;
+  userBadges: number;
+  topParticipantBadges: number;
+}
+
 const CampaignDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getCampaign } = useApi();
+  const { getCampaign, getCampaignRanking, getCampaignPrizes } = useApi();
   const [campaign, setCampaign] = useState<Campaign | null>(null);
+  const [prizes, setPrizes] = useState<CampaignPrizes | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isPrizesModalOpen, setIsPrizesModalOpen] = useState(false);
@@ -33,27 +60,47 @@ const CampaignDetails: React.FC = () => {
   const [isQRScannerOpen, setIsQRScannerOpen] = useState(false);
   const [isInvoiceScannerOpen, setIsInvoiceScannerOpen] = useState(false);
   const [isScanSuccessOpen, setIsScanSuccessOpen] = useState(false);
-  const [scanResult, setScanResult] = useState<any>(null);
+  const [scanResult, setScanResult] = useState<{ campaign?: string; badgeType?: string; qrData?: string; merchant?: string; total?: number; points?: number } | null>(null);
   const [scanType, setScanType] = useState<'qr' | 'invoice'>('qr');
+  const [ranking, setRanking] = useState<CampaignRanking | null>(null);
 
   useEffect(() => {
-    const fetchCampaign = async () => {
+    const fetchCampaignData = async () => {
       if (!id) return;
       
       try {
         setLoading(true);
+        
+        // Fetch campaign data first (required)
         const campaignData = await getCampaign(id);
         setCampaign(campaignData);
+        
+        // Fetch ranking and prizes data in parallel (optional)
+        const rankingPromise = getCampaignRanking(id).catch(() => null);
+        const prizesPromise = getCampaignPrizes(id).catch(() => null);
+        
+        const [rankingData, prizesData] = await Promise.all([rankingPromise, prizesPromise]);
+        
+        if (rankingData) {
+          setRanking(rankingData);
+        }
+        
+        if (prizesData) {
+          console.log('Prizes data received:', prizesData);
+          setPrizes(prizesData);
+        } else {
+          console.log('No prizes data received for campaign:', id);
+        }
       } catch (err) {
-        console.error('Error fetching campaign:', err);
+        console.error('Error fetching campaign data:', err);
         setError('Failed to load campaign details');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCampaign();
-  }, [id, getCampaign]);
+    fetchCampaignData();
+  }, [id, getCampaign, getCampaignRanking, getCampaignPrizes]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -98,7 +145,7 @@ const CampaignDetails: React.FC = () => {
     setIsScanSuccessOpen(true);
   };
 
-  const handleInvoiceScanSuccess = (data: any) => {
+  const handleInvoiceScanSuccess = (data: { merchant: string; total: number; points: number }) => {
     setIsInvoiceScannerOpen(false);
     setScanResult(data);
     setScanType('invoice');
@@ -148,60 +195,72 @@ const CampaignDetails: React.FC = () => {
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <div className="bg-gradient-to-r from-purple-600 to-purple-700 text-white p-6">
-        <div className="flex items-center gap-3 mb-4">
+      <div className="bg-gradient-to-b from-gray-50 to-white p-6 pt-12">
+        <div className="flex items-center gap-4 mb-8">
           <button
             onClick={() => navigate('/mobile')}
-            className="text-white hover:text-gray-200 text-2xl font-bold"
+            className="text-gray-600 hover:text-gray-800 text-2xl font-bold"
           >
             ←
           </button>
-          <div>
-            <h1 className="text-2xl font-bold">{campaign.name}</h1>
-            <p className="text-purple-100">{campaign.description}</p>
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">{campaign.name}</h1>
+            <p className="text-gray-600 text-sm">{campaign.description}</p>
           </div>
         </div>
         
-        {/* Campaign Stats */}
-        <div className="bg-white bg-opacity-20 rounded-xl p-4 mb-4">
-          <div className="flex items-center justify-between">
-            <div className="text-center">
-              <div className="text-2xl font-bold">{campaign.badgeCount}</div>
-              <div className="text-sm text-purple-100">Badges Earned</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold">{campaign.badges.length}</div>
-              <div className="text-sm text-purple-100">Total Available</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold">
-                {Math.round((campaign.badgeCount / campaign.badges.length) * 100)}%
-              </div>
-              <div className="text-sm text-purple-100">Completion</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Points Counter and Prizes Button */}
-        <div className="flex items-center justify-between">
-          <div className="bg-white bg-opacity-20 rounded-xl p-4 flex-1 mr-3">
+        {/* Stats Cards */}
+        <div className="flex gap-4 mb-6">
+          <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex-1">
             <div className="flex items-center gap-3">
-              <div className="text-3xl">⭐</div>
+              <span className="text-3xl">⭐</span>
               <div>
-                <div className="text-2xl font-bold">{totalPoints}</div>
-                <div className="text-sm text-purple-100">Total Points</div>
+                <div className="text-2xl font-bold text-gray-900">{totalPoints}</div>
+                <div className="text-sm text-gray-600">Total Points</div>
               </div>
             </div>
           </div>
+          
           <button
-            onClick={() => setIsPrizesModalOpen(true)}
-            className="bg-white bg-opacity-20 hover:bg-opacity-30 rounded-xl p-4 transition-all"
+            onClick={() => {
+              console.log('Prizes button clicked, opening modal');
+              console.log('Current prizes state:', prizes);
+              setIsPrizesModalOpen(true);
+            }}
+            className="bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all w-1/5"
           >
-            <div className="text-center">
-              <div className="text-2xl mb-1">🎁</div>
-              <div className="text-xs text-purple-100">Prizes</div>
+            <div className="flex flex-col items-center gap-2">
+              <span className="text-2xl">🎁</span>
+              <div className="text-center">
+                <div className="text-sm font-semibold">Redeem</div>
+                <div className="text-xs text-purple-100">
+                  {prizes ? `${prizes.availablePrizes} prizes` : 'Prizes'}
+                </div>
+              </div>
             </div>
           </button>
+        </div>
+
+        {/* Progress Section */}
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-gray-900">Campaign Progress</h2>
+            <span className="text-sm text-gray-600">
+              {campaign.badgeCount} of {campaign.badges.length} badges
+            </span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-3 mb-4">
+            <div 
+              className="h-3 rounded-full bg-gradient-to-r from-purple-500 to-pink-500"
+              style={{ width: `${(campaign.badgeCount / campaign.badges.length) * 100}%` }}
+            ></div>
+          </div>
+          <div className="flex items-center justify-between text-sm text-gray-600">
+            <span>{Math.round((campaign.badgeCount / campaign.badges.length) * 100)}% Complete</span>
+            {ranking && (
+              <span>Ranked #{ranking.position} of {ranking.totalParticipants}</span>
+            )}
+          </div>
         </div>
       </div>
 
@@ -236,6 +295,63 @@ const CampaignDetails: React.FC = () => {
               <span>Scan to Earn Points</span>
             </button>
           </div>
+
+          {/* Ranking Section */}
+          {ranking && (
+            <div className="bg-white rounded-xl p-6 mb-6 shadow-sm">
+              <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <span>🏆</span>
+                <span>Campaign Ranking</span>
+              </h2>
+              
+              <div className="space-y-4">
+                {/* Your Position */}
+                <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Your Position</h3>
+                      <p className="text-sm text-gray-600">
+                        You're ranked #{ranking.position} out of {ranking.totalParticipants} participants
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-3xl font-bold text-purple-600">#{ranking.position}</div>
+                      <div className="text-sm text-gray-500">out of {ranking.totalParticipants}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Progress to Next Position */}
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>Progress to next position</span>
+                    <span>{ranking.userBadges} / {ranking.topParticipantBadges} badges</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="h-2 rounded-full bg-gradient-to-r from-purple-500 to-blue-500"
+                      style={{ width: `${Math.min((ranking.userBadges / ranking.topParticipantBadges) * 100, 100)}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    {ranking.topParticipantBadges - ranking.userBadges} more badges to reach the top!
+                  </p>
+                </div>
+
+                {/* Ranking Stats */}
+                <div className="grid grid-cols-2 gap-4 pt-2">
+                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                    <div className="text-xl font-bold text-gray-900">{ranking.userBadges}</div>
+                    <div className="text-xs text-gray-600">Your Badges</div>
+                  </div>
+                  <div className="text-center p-3 bg-gray-50 rounded-lg">
+                    <div className="text-xl font-bold text-gray-900">{ranking.topParticipantBadges}</div>
+                    <div className="text-xs text-gray-600">Top Player</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Badges Section */}
           <div className="bg-white rounded-xl p-6 shadow-sm">
@@ -298,6 +414,8 @@ const CampaignDetails: React.FC = () => {
         isOpen={isPrizesModalOpen}
         onClose={() => setIsPrizesModalOpen(false)}
         totalPoints={totalPoints}
+        prizes={prizes?.prizes || []}
+        availablePrizes={prizes?.availablePrizes || 0}
       />
 
       {/* Scan Modal */}
